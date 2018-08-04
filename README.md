@@ -20,9 +20,7 @@ If you do know how I should license this, @ me on Twitter:
 
 DESCRIPTION:
 
-*** please note, this was done purely to learn how encryption works
-*** and to practice Python. I cannot guarentee that it is actually
-*** secure, so please do not use it to encrypt anything sensitive!
+*please note, this was done purely to learn how encryption works and to practice Python. I cannot guarentee that it is actually secure, so please do not use it to encrypt anything sensitive!*
 
 1) Run prob-keygen.py to generate private & public keys.
 
