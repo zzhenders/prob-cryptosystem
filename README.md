@@ -6,9 +6,9 @@ written for Python 3.6 by Z. Henderson
 CREDITS:
 
 Algorithms and math from
->> "Probabilistic encryption and how to play mental poker keeping
+- "Probabilistic encryption and how to play mental poker keeping
   secret all partial information" (1982) by Goldwasser and Micali
->> Wikipedia
+- Wikipedia
 
 LICENSE:
 
