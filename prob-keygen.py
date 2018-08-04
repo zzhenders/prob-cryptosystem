@@ -1,15 +1,11 @@
-# rsa-keygen.py 
+# prob-keygen.py 
 #
 #   WARNING! THIS IS POSSIBLY *NOT* SECURE.
 #   DO NOT USE TO ENCRYPT SENSITIVE INFO.
 #
-#   An implementation of a public/private keypair generation using RSA. 
+#   An implementation of a public/private keypair generation. 
 #
-#   written by Z. Henderson for Python 3.6
-#
-#   based on RSA as learned from Wikipedia & the cryptosystem described in
-#   "Probabilistic Encryption and How to Play Mental Poker Keeping Secret
-#   All Partial Information" by Goldwasser and Micali
+#   written by Z. Henderson
 
 from math import gcd, sqrt
 from secrets import randbelow
@@ -69,36 +65,60 @@ Please also be patient, this will take a moment.""")
     sleep(2)                            # provides the user with sufficient time to respond
     numdigits = 200                     # how long primes should be, in decimal digits
             
-    ## FINDING 1st PRIME ##
-    p1 = largePrimeGen(numdigits)
-
-    ## FINDING 2nd PRIME ##
-    p2 = largePrimeGen(numdigits)
-
+    p1 = largePrimeGen(numdigits)       ## FINDING 1st PRIME ##
+    p2 = largePrimeGen(numdigits)       ## FINDING 2nd PRIME ##
     n = p1*p2
 
-    ## FINDING Y: QUADRATIC NONRESIDUE ##
-    x = genNonresidue(p1,p2)
+    x = genNonresidue(p1,p2)            ## FINDING X: QUADRATIC NONRESIDUE ##
     y = coprime(n)
 
-    c0 = pow(y, 2, n)
-    c1 = pow(x*y*y, 1, n)
+    msg = 'Hello'                       ## Testing crypto to ensure everything
+    hexa = []                           ## works properly, that numbers aren't
+    for c in msg:                       ## extremely unlucky. This has a very
+        temp = hex(ord(c))              ## low chance of failing.
+        temp = temp[2:]
+        if len(temp) < 2:
+            temp = '0' + temp
+        hexa.append(temp)
+    num = "".join(hexa)
+    num = bin(int(num,16))
+    num = num[2:]
+    cyp = []
+    
+    for bit in num:
+        if bit == '0':
+            cyp.append(hex(pow(y, 2, n)))
+        else:
+            cyp.append(hex(pow(x*y*y, 1, n)))
 
-    print(c0,c1)
+    res = []
+    for hexnum in cyp:
+        res.append([pow(int(hexnum,16)%p1, (p1-1)//2, p1), pow(int(hexnum,16)%p2, (p2-1)//2, p2)])
+
     plain = []
-    pt = [[pow(c0%p1, (p1-1)//2, p1), pow(c0%p2, (p2-1)//2, p2)],[pow(c1%p1, (p1-1)//2, p1), pow(c1%p2, (p2-1)//2, p2)]]
-    for tu in pt:
+    for tu in res:
         if tu[0] == 1:
             if tu[1] == 1:
-                plain.append(0)
+                plain.append('0')
             else:
-                plain.append(1)
+                plain.append('1')
         else:
-            plain.append(1)
-            
+            plain.append('1')
+
+    plain = "".join(plain)
+    hexa = hex(int(plain,2))
+    hexa = hexa[2:]
+    chars = []
+    for i in range(len(hexa)//2):
+        temp = hexa[2*i:2*i+2]
+        chars.append(chr(int(temp,16)))
+    plain = "".join(chars)
     print(plain)
+
+    if msg != plain:
+        return "Sorry, unlucky numbers chosen. Please try again!"
     
-    ## This section is for RSA ##
+    ## This section is for RSA implementation ##
 #    lambdaN = ctf(p1,p2)                      # Charmichael totient function
 #
 #    e = coprime(lambdaN)                      # encryption exponent
@@ -114,16 +134,16 @@ Please also be patient, this will take a moment.""")
 #        privatekey = "{0}\n{1}".format(hex(d), hex(n))
 #        publickey = "{0}\n{1}".format(hex(e), hex(n))
 
+    else:
+        privatekey = "{0}\n{1}".format(hex(p1), hex(p2))
+        publickey  = "{0}\n{1}".format(hex(x), hex(n))
+        privateOutFile = open("privateKey", "w")
+        publicOutFile = open("publicKey", "w")
 
-    privatekey = "{0}\n{1}".format(hex(p1), hex(p2))
-    publickey  = "{0}\n{1}".format(hex(y), hex(n))
-    privateOutFile = open("privateKey", "w")
-    publicOutFile = open("publicKey", "w")
-    print(privatekey, file = privateOutFile)
-    print(publickey, file = publicOutFile)
-    privateOutFile.close()
-    publicOutFile.close()
-
-    print("\nSuccess!\n\nPrivate and public key generated in this directory.")
+        print(privatekey, file = privateOutFile)
+        print(publickey, file = publicOutFile)
+        privateOutFile.close()
+        publicOutFile.close()
+        print("\nSuccess!\n\nPrivate and public key generated in this directory.")
 
 main()

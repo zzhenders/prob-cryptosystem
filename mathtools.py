@@ -1,5 +1,9 @@
 # mathtools.py
-#   Contains functions used by multiple parts of the encryption system
+#
+#   Contains functions used by multiple parts of the encryption system,
+#   including several functions used in development, or for RSA.
+#
+#   written by Z. Henderson
 
 from secrets import randbelow
 from math import gcd, sqrt
@@ -53,7 +57,6 @@ def ctf(p,q):
 
     #lcm = ((p-1)/(gcd(p-1, q-1)))*(q-1)
     denominator = gcd(p-1, q-1)
-    
     intermediate = (p-1) // denominator
     result = intermediate * (q-1)
     return result
@@ -120,9 +123,6 @@ def genNonresidue(p1, p2):
     x, a, b, = coprime(p1*p2), 0, 0
     
     while True:
-        #xp1,xp2 = x%p1, x%p2
-        #a = pow(x, (p1-1)//2, p1)
-        #b = pow(x, (p2-1)//2, p2)
         a = jacobi(x,p1)
         b = jacobi(x,p2)
 

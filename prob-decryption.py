@@ -1,32 +1,28 @@
-# rsa-decryption.py
+# prob-decryption.py
 #
-#   WARNING! THIS IS PROBABLY *NOT* SECURE. DO NOT USE FOR ACTUAL ENCRYPTION.
+#   WARNING! THIS IS POSSIBLY *NOT* SECURE.
+#   DO NOT USE TO ENCRYPT SENSITIVE INFO.
 #
-#   Decrypts an encrypted file using RSA. 
+#   Decrypts an encrypted file. 
 #
 #   written by Z. Henderson
-#
-#   based on "Probabilistic Encryption and How to Play Mental Poker Keeping
-#   Secret All Partial Information" by Goldwasser and Micali
 
 def decipher(ciphertext, p, q):
 
-    nlen = len(hex(p*q)) - 2
+    if ord(ciphertext[-1]) == 10:
+        ciphertext = ciphertext[:-1]    # removes end-of-text newline character if present
 
-    ciphertext = ciphertext[:-1]
-    clen = len(ciphertext)
-
+    nlen, clen = len(hex(p*q)) - 2, len(ciphertext)
     clist = []
-    for i in range(clen//nlen):
-        clist.append(ciphertext[i*nlen:(i*nlen)+nlen])
+    for i in range(clen//nlen):         # breaks large hex number into blocks
+        clist.append(ciphertext[i*nlen:((i+1)*nlen)])
 
-    residue = []
-
+    residue = []                        # calculates residuosity of each number block mod p,q
     for hexnum in clist:
-        residue.append[pow(hexnum%p, (p-1)//2, p), pow(hexnum%q, (q-1)//2, q)]
-
-    binary = ""
-    for tup in residue:
+        residue.append([pow(int(hexnum,16)%p, (p-1)//2, p), pow(int(hexnum,16)%q, (q-1)//2, q)])
+   
+    binary = []                         # if the number is a quadratic nonresidue mod n
+    for tup in residue:                 # return 0, otherwise return 1
         if tup[0] == 1:
             if tup[1] == 1:
                 binary.append('0')
@@ -35,20 +31,17 @@ def decipher(ciphertext, p, q):
         else:
             binary.append('1')
 
-    
-    #[pow(c0%p1, (p1-1)//2, p1), pow(c0%p2, (p2-1)//2, p2)]
-    
-def list2hex(listofhex, k):
-    hexa = "".join(listofhex)
-    listofhex = hexa.split('0x')
-    listofhex = listofhex[1:-1]             #removing padding
-    for i in range(len(listofhex)):
-        while len(listofhex[i]) < k:
-            temp = listofhex.pop(i)
-            listofhex.insert(i,'0'+temp)     
-    hexa = "".join(listofhex)
-    return hexa
+    binary = "".join(binary)            # translates binary to hexadecimal
+    hexa = hex(int(binary, 2))
+    hexa = hexa[2:]
 
+    chars = []                          # for each 2-digit hex, finds unicode char 
+    for i in range(len(hexa)//2):       # and assembles them into a string
+        temp = hexa[2*i:2*i+2]
+        chars.append(chr(int(temp,16)))
+    plain = "".join(chars)
+    return plain
+    
 def main():
 
     print("This program will decrypt a file you specify.")
@@ -58,18 +51,21 @@ def main():
 
     cname = "ciphertext" #input("Please enter the filename\nof the file you want to encrypt: ")
 
-    priKeyFile = open("publicKey",'r')
+    infile = open(cname, 'r')
+    ciphertext = infile.read()
+    infile.close()
+
+    priKeyFile = open("privateKey",'r')
     priKey = []
     for line in priKeyFile:
         priKey.append(int(line, 16))
     priKeyFile.close()
 
-    infile = open(cname, 'r')
-    ciphertext = infile.read()
-    infile.close()
-
     plaintext = decipher(ciphertext, priKey[0], priKey[1])
+    outfile = open('plaintext', 'w')
+    print(plaintext, file = outfile)
+    outfile.close()
 
-
+    print("\nSuccess!\n\nPlaintext file generated in this directory.")
     
 main()
